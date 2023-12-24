@@ -47,7 +47,6 @@ class AC_Policy(nn.Module):
         return action_prob, state_values
 
 def select_action(state, model):
-    state = torch.from_numpy(state).float()
     probs, state_value = model(state)
 
     # create a categorical distribution over the list of probabilities of actions

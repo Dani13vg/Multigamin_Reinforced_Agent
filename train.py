@@ -2,13 +2,13 @@ import wandb
 from AC_model import AC_Policy, select_action, finish_episode
 import gymnasium as gym
 import argparse
-import torch
+import torch 
 from itertools import count
 from collections import namedtuple
 import torch.optim as optim
 import numpy as np
 
-def main():
+def main(): 
 
     running_reward = 10
 
@@ -17,11 +17,15 @@ def main():
 
         # reset environment and episode reward
         state, _ = env.reset()
+
         ep_reward = 0
 
         # for each episode, only run 9999 steps so that we don't
         # infinite loop while learning
         for t in range(1, 10000):
+
+            # Convert state to tensor
+            state = torch.from_numpy(state).float().to(device)
 
             # select action from policy
             action = select_action(state, model)
@@ -96,7 +100,7 @@ if __name__ == '__main__':
     parser.add_argument('--wandb', action='store_true', help='enable wandb logging') # usage: python train.py --wandb
 
     parser.add_argument('--save-interval', type=int, default=100, metavar='N',
-                        help='interval between saving model (default: 100)') # usage: python train.py 
+                        help='interval between saving model (default: 100)') # usage: python train.py
 
     args = parser.parse_args()
 
@@ -107,14 +111,18 @@ if __name__ == '__main__':
     env.reset(seed=args.seed)
     torch.manual_seed(args.seed)
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     # if wandb flag is set then 
     if args.wandb:
         wandb.init(project='AC_agent', entity='ai42', name='AC_agent1'+args.env)
 
     # Model initialization
     model = AC_Policy(input_dim=env.observation_space.shape[0], hidden_dim=128, output_dim=env.action_space.n)
+    model.to(device)
 
     # Optimizer initialization with Adam 
     optimizer = optim.Adam(model.parameters(), args.lr)
 
+    print(device)
     main()
